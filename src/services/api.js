@@ -9,27 +9,44 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-function getCookie(name) {
-  const raw = document.cookie
-    .split(";")
-    .map((c) => c.trim())
-    .find((c) => c.startsWith(name + "="));
-  return raw ? decodeURIComponent(raw.split("=")[1]) : "";
-}
+// Store CSRF token with persistence
+let csrfToken = sessionStorage.getItem('csrf_token');
 
-// Add an interceptor once
-apiClient.interceptors.request.use((config) => {
-  const method = (config.method || "get").toLowerCase();
-  const needsCsrf = ["post", "put", "patch", "delete"].includes(method);
-  if (needsCsrf) {
-    const csrf = getCookie("csrf_access");
-    if (csrf) {
-      config.headers = config.headers || {};
-      config.headers["X-CSRF-TOKEN"] = csrf;
+// Response interceptor to capture CSRF token from headers
+apiClient.interceptors.response.use(
+  (response) => {
+    const token = response.headers['x-csrf-token'];
+    if (token) {
+      csrfToken = token;
+      sessionStorage.setItem('csrf_token', token);
+      console.log("✅ CSRF token received and stored");
     }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Request interceptor to add CSRF token to headers
+apiClient.interceptors.request.use(
+  (config) => {
+    if (csrfToken) {
+      config.headers['X-CSRF-TOKEN'] = csrfToken;
+      console.log("✅ CSRF token attached to request:", config.url);
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Clear CSRF token on logout
+export const clearCsrfToken = () => {
+  csrfToken = null;
+  sessionStorage.removeItem('csrf_token');
+};
 
 export const api = {
   loginPlayer: async (data) => {
@@ -49,6 +66,7 @@ export const api = {
 
   logoutPlayer: async () => {
     const response = await apiClient.post("/auth/logout");
+    clearCsrfToken();
     return response.data;
   },
 
