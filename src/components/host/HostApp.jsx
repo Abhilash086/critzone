@@ -7,6 +7,7 @@ import CreateTournament from "./pages/CreateTournament";
 import MyTournaments from "./pages/MyTournaments";
 import Profile from "./pages/Profile";
 import { useUser } from "../../context/UserContext";
+import Loader from "../Loader";
 
 export default function HostApp() {
   const [activePage, setActivePage] = useState("Dashboard");
@@ -29,7 +30,7 @@ export default function HostApp() {
   };
 
   if(!isAuthenticated){
-    return <div className="flex items-center justify-center h-screen text-white">Please log in to access the Host Dashboard.</div>;
+    return <Loader />;
   }
 
   return (

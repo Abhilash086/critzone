@@ -1,5 +1,5 @@
 // components/HostNavbar.jsx
-import React from "react";
+import React,{ useState } from "react";
 import { Menu, LogOut } from "lucide-react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 
 export default function HostNavbar({ setSidebarOpen }) {
   const { logout } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {

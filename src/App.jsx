@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Home from "./pages/Home";
 import TournamentPage from "./pages/TournamentPage";
 import TournamentDetails from "./pages/TournamentDetails";
-import TournamentBracket from "./pages/TournamentBracket";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
@@ -49,10 +48,6 @@ const router = createBrowserRouter([
             <TournamentDetails />
           </ProtectedRoute>
         ),
-      },
-      {
-        path: "/bracket",
-        element: <TournamentBracket />,
       },
       {
         path: "/contact",

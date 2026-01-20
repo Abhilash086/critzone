@@ -8,7 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 
 export default function HostAuth() {
-  const { setLoading, isAuthenticated } = useUser();
+  const { setLoading, isAuthenticated, user } = useUser();
   const { hostLogin, hostSignup } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
@@ -28,7 +28,6 @@ export default function HostAuth() {
       if (isLogin) {
         const res = await hostLogin(data);
         toast.success(res.message || "Login successful!");
-        navigate("/host/dashboard");
       } else {
         const res = await hostSignup(data);
         toast.success(res.message || "Signup successful!");
@@ -49,7 +48,7 @@ export default function HostAuth() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate(`/host/${user._id}/dashboard`);
     }
   }, [isAuthenticated, navigate]);
 

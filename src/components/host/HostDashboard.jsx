@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Navbar from "../Navbar";
 import Footer from "../Footer";
 import { useUser } from "../../context/UserContext";
@@ -51,9 +51,14 @@ const hostStats = {
 const HostDashboard = () => {
   const { user } = useUser();
 
+  useEffect(() => {
+    console.log("User details", user);
+    console.log("Host Dashboard mounted");
+  }, [user]);
+
   return (
     <div className="min-h-screen flex flex-col text-white font-orbitron">
-      <Navbar host={true} />
+      {/* <Navbar host={true} /> */}
       {user && user.Verified === false ? (
         <UnverifiedUser />
       ) : (
