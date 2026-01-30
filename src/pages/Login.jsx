@@ -1,18 +1,15 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { set, useForm } from "react-hook-form";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { useUser } from "../context/UserContext";
 import { useAuth } from "../hooks/useAuth";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 
 export default function AuthPage() {
   const [mode, setMode] = useState("login");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -20,15 +17,7 @@ export default function AuthPage() {
     reset,
     formState: { errors },
   } = useForm();
-  const { isAuthenticated } = useUser();
   const { login, signup } = useAuth();
-
-  // If already authenticated, redirect away from login/signup page
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/");
-    }
-  }, [isAuthenticated, navigate]);
 
   const password = watch("password");
 
@@ -45,17 +34,15 @@ export default function AuthPage() {
         toast.success("Signed up successfully!");
         setMode("login");
       } else {
-        const res = await login(data);
-        toast.success(res.message || "Login successful!");
-        navigate("/");
+        await login(data);
+        toast.success("Login successful!");
+        // Navigation handled automatically by useAuth
       }
     } catch (error) {
       console.error("Error during authentication:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "Authentication failed. Please try again.",
-        { duration: 3000 }
-      );
+      toast.error(error.message || "Authentication failed. Please try again.", { 
+        duration: 3000 
+      });
     } finally {
       setLoading(false);
     }

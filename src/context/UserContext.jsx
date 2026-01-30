@@ -12,8 +12,9 @@ const UserProvider = ({ children }) => {
     const fetchAuthCheck = async () => {
       try {
         const res = await api.checkAuth();
-        res.details.role = res?.role;
-        setUser(res.details);
+        const userData = res.details || res.user || res;
+        userData.role = res?.role || userData.role;
+        setUser(userData);
         setIsAuthenticated(true);
       } catch (error) {
         // Interceptor already handles 401s silently

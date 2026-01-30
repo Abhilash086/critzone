@@ -1,17 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
-import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 
 export default function HostAuth() {
-  const { setLoading, isAuthenticated, user } = useUser();
+  const { setLoading } = useUser();
   const { hostLogin, hostSignup } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const navigate = useNavigate();
 
   const {
     register,
@@ -22,35 +20,27 @@ export default function HostAuth() {
   } = useForm();
 
   const onSubmit = async (data) => {
-    console.log(isLogin ? "Host Logging in..." : "Host Signing up...", data);
     try {
       setLoading(true);
       if (isLogin) {
-        const res = await hostLogin(data);
-        toast.success(res.message || "Login successful!");
+        await hostLogin(data);
+        toast.success("Login successful!");
+        // Navigation handled automatically by useAuth
       } else {
-        const res = await hostSignup(data);
-        toast.success(res.message || "Signup successful!");
+        await hostSignup(data);
+        toast.success("Signup successful!");
         setIsLogin(true);
       }
     } catch (error) {
       console.error("Error during host authentication:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "Authentication failed. Please try again.",
-        { duration: 3000 }
-      );
+      toast.error(error.message || "Authentication failed. Please try again.", {
+        duration: 3000,
+      });
     } finally {
       setLoading(false);
     }
     reset();
   };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate(`/host/${user._id}/dashboard`);
-    }
-  }, [isAuthenticated, navigate]);
 
   const password = watch("password");
 

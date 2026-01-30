@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import TournamentDetailsModal from "../components/TournamentDetailsModal";
 import EditTournamentModal from "../components/EditTournamentModal";
+import { api } from "../../../services/api";
+import toast from "react-hot-toast";
+import Loader from "../../Loader";
 
 export default function MyTournaments() {
   const navigate = useNavigate();
@@ -10,6 +13,8 @@ export default function MyTournaments() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState(null);
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const handleViewDetails = (tournament) => {
     setSelectedTournament(tournament);
@@ -21,26 +26,71 @@ export default function MyTournaments() {
     setIsEditModalOpen(true);
   };
 
+  useEffect(() => {
+    fetchTournaments();
+  }, []);
+
+  const fetchTournaments = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getTournaments();
+      const tournamentsData = response.tournaments || [];
+      
+      // Map API response to component format
+      const mappedTournaments = tournamentsData.map(tournament => {
+        const tournamentDate = new Date(tournament.tournamentDate);
+        const registrationDeadline = new Date(tournament.registrationDate);
+        const now = new Date();
+        
+        // Determine status based on dates
+        let status = "Active";
+        if (tournamentDate < now) {
+          status = "Completed";
+        } else if (now < registrationDeadline) {
+          status = "Active";
+        }
+        
+        return {
+          id: tournament._id,
+          name: `${tournament.gameName} Tournament`,
+          game: tournament.gameName,
+          mode: tournament.gameMode.charAt(0).toUpperCase() + tournament.gameMode.slice(1),
+          platform: tournament.platform.charAt(0).toUpperCase() + tournament.platform.slice(1),
+          status: status,
+          date: tournament.tournamentDate,
+          participants: 0, // TODO: Get from API when available
+          maxSlots: tournament.slots,
+          prizePool: `₹${tournament.prizePool.toLocaleString()}`,
+          // Keep original data for details modal
+          ...tournament
+        };
+      });
+      
+      setTournaments(mappedTournaments);
+    } catch (error) {
+      console.error("Error fetching tournaments:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to load tournaments. Please try again."
+      );
+      setTournaments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSaveEdit = async (data) => {
     console.log('Saving tournament updates:', data);
     // TODO: Add API call to update tournament
   };
 
   const handleCancel = (tournament) => {
-    if (window.confirm(`Are you sure you want to cancel "${tournament.name}"?`)) {
-      console.log('Cancelling tournament:', tournament.id);
+    if (window.confirm(`Are you sure you want to cancel "${tournament.name || tournament.gameName}"?`)) {
+      console.log('Cancelling tournament:', tournament.id || tournament._id);
       // TODO: Add API call to cancel tournament
-      alert('Tournament cancelled successfully!');
+      toast.success('Tournament cancelled successfully!');
     }
   };
-
-  const tournaments = [
-    { id: 1, name: "Winter Valorant Championship", game: "Valorant", mode: "Squad", platform: "PC", status: "Active", date: "2026-02-15", participants: 64, maxSlots: 100, prizePool: "₹50,000" },
-    { id: 2, name: "PUBG Mobile Showdown", game: "PUBG Mobile", mode: "Squad", platform: "Mobile", status: "Active", date: "2026-01-28", participants: 88, maxSlots: 100, prizePool: "₹25,000" },
-    { id: 3, name: "CS:GO Pro League", game: "CS:GO", mode: "Team", platform: "PC", status: "Completed", date: "2025-12-20", participants: 32, maxSlots: 32, prizePool: "₹75,000" },
-    { id: 4, name: "Free Fire Tournament", game: "Free Fire", mode: "Squad", platform: "Mobile", status: "Completed", date: "2025-11-15", participants: 50, maxSlots: 50, prizePool: "₹15,000" },
-    { id: 5, name: "Apex Legends Clash", game: "Apex Legends", mode: "Team", platform: "Console", status: "Cancelled", date: "2025-10-30", participants: 12, maxSlots: 60, prizePool: "₹30,000" },
-  ];
 
   const stats = {
     total: tournaments.length,
@@ -63,6 +113,14 @@ export default function MyTournaments() {
       <p className="text-white text-xl sm:text-2xl font-bold mt-1">{value}</p>
     </motion.div>
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-full min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-full">
@@ -176,7 +234,7 @@ export default function MyTournaments() {
 
       {filteredTournaments.length === 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#1E2837] border border-[#2a2f3a] rounded-lg p-8 text-center">
-          <p className="text-gray-400">No {filter.toLowerCase()} tournaments found.</p>
+          <p className="text-gray-400">No {filter.toLowerCase() === "all" ? "" : filter.toLowerCase()} tournaments found.</p>
         </motion.div>
       )}
 

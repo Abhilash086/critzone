@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import { CircleAlert, RefreshCw, CheckCircle } from "lucide-react";
 import { useUser } from "../context/UserContext";
 import { api } from "../services/api";
+import { handleVerificationError } from "../utils/errorHandler";
 import toast from "react-hot-toast";
 
 const UnverifiedUser = () => {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [otp, setOtp] = useState("");
@@ -20,10 +21,8 @@ const UnverifiedUser = () => {
         { duration: 4000 }
       );
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          "Could not resend verification right now."
-      );
+      const errorMessage = handleVerificationError(err);
+      toast.error(errorMessage);
     } finally {
       setSending(false);
     }
@@ -38,16 +37,16 @@ const UnverifiedUser = () => {
     setVerifying(true);
     try {
       await api.verifyOtp({ otp });
+      
+      // Optimistic UI update - immediately update user state
+      setUser(prev => ({ ...prev, isVerified: true }));
+      
       toast.success("Account verified successfully!", { duration: 3000 });
       
-      // Optionally reload the page or redirect
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      // No page reload needed - state is already updated
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Invalid or expired OTP. Please try again."
-      );
+      const errorMessage = handleVerificationError(err);
+      toast.error(errorMessage);
     } finally {
       setVerifying(false);
     }
@@ -56,7 +55,7 @@ const UnverifiedUser = () => {
   if (!user) return null; // Guard: only show if a user exists
 
   return (
-    <div className="flex items-center justify-center font-sans w-full min-h-screen pt-24 pb-8 px-4">
+    <div className="flex items-center justify-center font-sans w-full min-h-screen pb-8 px-4">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

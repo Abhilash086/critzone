@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { api } from "../../../services/api";
+import toast from "react-hot-toast";
 
 export default function CreateTournament() {
   const location = useLocation();
+  const navigate = useNavigate();
   const editMode = location.state?.editMode || false;
   const existingTournament = location.state?.tournament || null;
   
@@ -62,13 +65,52 @@ export default function CreateTournament() {
   };
 
   const onSubmit = async (data) => {
-    console.log(editMode ? "Updating Tournament:" : "Creating Tournament:", data);
-    if (editMode) {
-      alert(`Tournament "${existingTournament.name}" updated successfully!`);
-      // TODO: Add API call to update tournament
-    } else {
-      alert(`Tournament for ${data.gameName} created successfully!`);
-      // TODO: Add API call to create tournament
+    try {
+      // Prepare payload
+      const payload = {
+        gameName: data.gameName,
+        gameMode: data.gameMode,
+        platform: data.platform,
+        tournamentDate: data.tournamentDate,
+        tournamentTime: data.tournamentTime,
+        registrationDate: data.registrationDate,
+        registrationTime: data.registrationTime,
+        slots: data.slots,
+        teamSize: data.teamSize || null,
+        entryFee: data.entryFee || 0,
+        prizePool: data.prizePool,
+        firstPrize: data.firstPrize || null,
+        secondPrize: data.secondPrize || null,
+        thirdPrize: data.thirdPrize || null,
+        contactInfo: data.contactInfo,
+        streamLink: data.streamLink || null,
+        discordLink: data.discordLink || null,
+        rules: data.rules,
+      };
+
+      console.log("Creating Tournament with payload:", payload);
+
+      if (editMode) {
+        // TODO: Implement update tournament API
+        toast.success(`Tournament "${existingTournament.name}" updated successfully!`);
+      } else {
+        const response = await api.createTournament(payload);
+        toast.success(`Tournament "${data.gameName}" created successfully!`, {
+          duration: 4000,
+        });
+        
+        // Navigate to tournaments page after 1.5 seconds
+        setTimeout(() => {
+          navigate("/host/:id/dashboard");
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Error creating tournament:", error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to create tournament. Please try again."
+      );
     }
   };
 
