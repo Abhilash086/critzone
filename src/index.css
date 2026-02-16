@@ -18,6 +18,37 @@ body,
 #root {
   height: 100%;
   width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
   box-sizing: border-box;
+}
+
+.glow-text {
+  text-shadow: 0 0 10px currentColor;
+}
+
+/* Custom Scrollbar for Gaming Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #364150;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-primary);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-dark);
 }
 

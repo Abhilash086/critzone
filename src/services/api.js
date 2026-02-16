@@ -1,5 +1,5 @@
 import apiClient from "./axiosClient.js";
-import { clearCsrfToken } from "./sessionManager.js";
+import { clearCsrfToken } from "../components/SessionManager.jsx";
 
 export const api = {
   // Authentication
@@ -24,4 +24,5 @@ export const api = {
   // Tournament
   createTournament: (data) => apiClient.post("/tournament/create", data).then(r => r.data),
   getTournaments: () => apiClient.get("/view_tournaments").then(r => r.data),
+  updateTournamentStatus: (id, status) => apiClient.put(`/tournament/${id}/update_tournament_status`, { status }).then(r => r.data),
 };

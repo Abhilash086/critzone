@@ -37,13 +37,10 @@ const UnverifiedUser = () => {
     setVerifying(true);
     try {
       await api.verifyOtp({ otp });
-      
-      // Optimistic UI update - immediately update user state
       setUser(prev => ({ ...prev, isVerified: true }));
-      
       toast.success("Account verified successfully!", { duration: 3000 });
-      
       // No page reload needed - state is already updated
+      window.location.reload();
     } catch (err) {
       const errorMessage = handleVerificationError(err);
       toast.error(errorMessage);

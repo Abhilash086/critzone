@@ -16,17 +16,44 @@ export default function EditTournamentModal({ isOpen, onClose, tournament, onSav
 
   const tournamentDate = watch("tournamentDate");
   const tournamentTime = watch("tournamentTime");
+  const registrationDate = watch("registrationDate");
+  const registrationTime = watch("registrationTime");
+
+  // Check if original registration deadline has passed relative to CURRENT time (for disabling)
+  const isRegistrationClosed = React.useMemo(() => {
+    if (!tournament?.registrationDate || !tournament?.registrationTime) return false;
+    const d = new Date(tournament.registrationDate);
+    const t = new Date(tournament.registrationTime);
+    const deadline = new Date(d);
+    deadline.setHours(t.getHours());
+    deadline.setMinutes(t.getMinutes());
+    return deadline < new Date();
+  }, [tournament]);
 
   useEffect(() => {
     if (tournament && isOpen) {
       // Pre-fill form with tournament data
       reset({
-        gameName: tournament.game || '',
-        gameMode: tournament.mode || '',
-        platform: tournament.platform || '',
-        slots: tournament.maxSlots || '',
-        prizePool: tournament.prizePool?.replace(/[^0-9]/g, '') || '',
-        // Add more fields as needed
+        gameName: tournament.gameName || tournament.game || '',
+        gameMode: (tournament.gameMode || tournament.mode || '').toLowerCase(),
+        platform: (tournament.platform || '').toLowerCase(),
+        status: tournament.status || 'Active',
+        slots: tournament.slots || tournament.maxSlots || '',
+        prizePool: tournament.prizePool ? String(tournament.prizePool).replace(/[^0-9]/g, '') : '',
+        entryFee: tournament.entryFee || 0,
+        teamSize: tournament.teamSize || 1,
+        // Dates need to be parsed to Date objects for DatePicker
+        tournamentDate: tournament.tournamentDate ? new Date(tournament.tournamentDate) : null,
+        tournamentTime: tournament.tournamentTime ? new Date(tournament.tournamentTime) : null,
+        registrationDate: tournament.registrationDate ? new Date(tournament.registrationDate) : null,
+        registrationTime: tournament.registrationTime ? new Date(tournament.registrationTime) : null,
+        contactInfo: tournament.contactInfo || '',
+        streamLink: tournament.streamLink || '',
+        discordLink: tournament.discordLink || '',
+        rules: tournament.rules || '',
+        firstPrize: tournament.firstPrize || '',
+        secondPrize: tournament.secondPrize || '',
+        thirdPrize: tournament.thirdPrize || '',
       });
     }
   }, [tournament, isOpen, reset]);
@@ -98,10 +125,10 @@ export default function EditTournamentModal({ isOpen, onClose, tournament, onSav
                 <Field label="Game Mode" error={errors.gameMode}>
                   <select {...register("gameMode", { required: "Game mode is required" })} className={inputClass(errors.gameMode)}>
                     <option value="">Select Mode</option>
-                    <option value="Solo">Solo</option>
-                    <option value="Duo">Duo</option>
-                    <option value="Squad">Squad</option>
-                    <option value="Team">Team (5v5)</option>
+                    <option value="solo">Solo</option>
+                    <option value="duo">Duo</option>
+                    <option value="squad">Squad</option>
+                    <option value="team">Team</option>
                   </select>
                 </Field>
 
@@ -109,10 +136,20 @@ export default function EditTournamentModal({ isOpen, onClose, tournament, onSav
                 <Field label="Platform" error={errors.platform}>
                   <select {...register("platform", { required: "Platform is required" })} className={inputClass(errors.platform)}>
                     <option value="">Select Platform</option>
-                    <option value="PC">PC</option>
-                    <option value="Mobile">Mobile</option>
-                    <option value="Console">Console</option>
-                    <option value="Cross-platform">Cross-platform</option>
+                    <option value="pc">PC</option>
+                    <option value="mobile">Mobile</option>
+                    <option value="console">Console</option>
+                    <option value="cross-platform">Cross-Platform</option>
+                  </select>
+                </Field>
+
+                {/* Status */}
+                <Field label="Status" error={errors.status}>
+                  <select {...register("status", { required: "Status is required" })} className={inputClass(errors.status)}>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
                   </select>
                 </Field>
 
@@ -164,7 +201,6 @@ export default function EditTournamentModal({ isOpen, onClose, tournament, onSav
                     control={control}
                     rules={{
                       required: "Registration deadline is required",
-                      validate: (value) => !tournamentDate || value < tournamentDate || "Must be before tournament date",
                     }}
                     render={({ field }) => (
                       <DatePicker
@@ -172,9 +208,10 @@ export default function EditTournamentModal({ isOpen, onClose, tournament, onSav
                         onChange={field.onChange}
                         dateFormat="dd/MM/yyyy"
                         minDate={new Date()}
-                        maxDate={tournamentDate}
+                        maxDate={tournamentDate} // Still useful for UX
                         placeholderText="Select deadline"
-                        className={inputClass(errors.registrationDate)}
+                        className={`${inputClass(errors.registrationDate)} ${isRegistrationClosed ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={isRegistrationClosed}
                       />
                     )}
                   />
@@ -196,7 +233,8 @@ export default function EditTournamentModal({ isOpen, onClose, tournament, onSav
                         timeFormat="h:mm aa"
                         dateFormat="h:mm aa"
                         placeholderText="Select time"
-                        className={inputClass(errors.registrationTime)}
+                        className={`${inputClass(errors.registrationTime)} ${isRegistrationClosed ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={isRegistrationClosed}
                       />
                     )}
                   />

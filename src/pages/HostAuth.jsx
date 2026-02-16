@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import { useUser } from "../context/UserContext";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function HostAuth() {
-  const { setLoading } = useUser();
+  const { setLoading, isAuthenticated } = useUser();
   const { hostLogin, hostSignup } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -18,6 +20,12 @@ export default function HostAuth() {
     reset,
     formState: { errors },
   } = useForm();
+
+  useEffect(()=>{
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  },[isAuthenticated]);
 
   const onSubmit = async (data) => {
     try {

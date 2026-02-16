@@ -1,5 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDateIST, formatTimeIST } from "../../../utils/dateUtils";
 
 export default function TournamentDetailsModal({ isOpen, onClose, tournament }) {
   if (!tournament) return null;
@@ -30,10 +31,10 @@ export default function TournamentDetailsModal({ isOpen, onClose, tournament }) 
             {/* Header */}
             <div className="sticky top-0 bg-[#1E2837] border-b border-gray-700 p-6 flex justify-between items-start z-10">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">{tournament.name}</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">{tournament.gameName}</h2>
                 <div className="flex gap-3 items-center">
-                  <span className="text-gray-400 text-sm">{tournament.game}</span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColor[tournament.status]}`}>
+                  <span className="text-gray-400 text-sm">{tournament.gameMode}</span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColor[tournament.status] || "bg-gray-500/20 text-gray-400 border-gray-500/50"}`}>
                     {tournament.status}
                   </span>
                 </div>
@@ -52,11 +53,15 @@ export default function TournamentDetailsModal({ isOpen, onClose, tournament }) 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-[#0f1923] border border-gray-700 rounded-lg p-4">
                   <p className="text-gray-400 text-xs mb-1">Date</p>
-                  <p className="text-white font-semibold">{tournament.date}</p>
+                  <p className="text-white font-semibold">
+                    {tournament.tournamentDate ? formatDateIST(tournament.tournamentDate) : "TBD"}
+                  </p>
                 </div>
                 <div className="bg-[#0f1923] border border-gray-700 rounded-lg p-4">
-                  <p className="text-gray-400 text-xs mb-1">Mode</p>
-                  <p className="text-white font-semibold">{tournament.mode}</p>
+                  <p className="text-gray-400 text-xs mb-1">Time</p>
+                  <p className="text-white font-semibold">
+                    {tournament.tournamentTime ? formatTimeIST(tournament.tournamentTime) : "TBD"}
+                  </p>
                 </div>
                 <div className="bg-[#0f1923] border border-gray-700 rounded-lg p-4">
                   <p className="text-gray-400 text-xs mb-1">Platform</p>
@@ -64,24 +69,7 @@ export default function TournamentDetailsModal({ isOpen, onClose, tournament }) 
                 </div>
                 <div className="bg-[#0f1923] border border-[#ff4655]/30 rounded-lg p-4">
                   <p className="text-gray-400 text-xs mb-1">Prize Pool</p>
-                  <p className="text-[#ff4655] font-bold">{tournament.prizePool}</p>
-                </div>
-              </div>
-
-              {/* Participants Progress */}
-              <div className="bg-[#0f1923] border border-gray-700 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-white font-semibold">Participants</h3>
-                  <span className="text-gray-400 text-sm">{tournament.participants} / {tournament.maxSlots}</span>
-                </div>
-                <div className="w-full bg-gray-800 rounded-full h-3">
-                  <div
-                    className="bg-gradient-to-r from-[#ff4655] to-pink-500 h-3 rounded-full transition-all"
-                    style={{ width: `${(tournament.participants / tournament.maxSlots) * 100}%` }}
-                  />
-                </div>
-                <div className="mt-2 text-xs text-gray-400">
-                  {tournament.maxSlots - tournament.participants} slots remaining
+                  <p className="text-[#ff4655] font-bold">₹{tournament.prizePool}</p>
                 </div>
               </div>
 
@@ -94,19 +82,23 @@ export default function TournamentDetailsModal({ isOpen, onClose, tournament }) 
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Tournament ID:</span>
-                      <span className="text-white font-mono">#{tournament.id}</span>
+                      <span className="text-white font-mono text-xs">#{tournament._id}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Game Mode:</span>
-                      <span className="text-white">{tournament.mode}</span>
+                      <span className="text-white">{tournament.gameMode}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Platform:</span>
-                      <span className="text-white">{tournament.platform}</span>
+                      <span className="text-gray-400">Team Size:</span>
+                      <span className="text-white">{tournament.teamSize} vs {tournament.teamSize}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Max Slots:</span>
-                      <span className="text-white">{tournament.maxSlots}</span>
+                      <span className="text-gray-400">Total Slots:</span>
+                      <span className="text-white">{tournament.slots}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Entry Fee:</span>
+                      <span className="text-white">{tournament.entryFee === 0 ? "Free" : `₹${tournament.entryFee}`}</span>
                     </div>
                   </div>
                 </div>
@@ -118,62 +110,84 @@ export default function TournamentDetailsModal({ isOpen, onClose, tournament }) 
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Total Prize Pool:</span>
-                      <span className="text-[#ff4655] font-bold">{tournament.prizePool}</span>
+                      <span className="text-[#ff4655] font-bold">₹{tournament.prizePool}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">1st Place:</span>
-                      <span className="text-yellow-400 font-semibold">🥇 50%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">2nd Place:</span>
-                      <span className="text-gray-300 font-semibold">🥈 30%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">3rd Place:</span>
-                      <span className="text-orange-400 font-semibold">🥉 20%</span>
-                    </div>
+                    {tournament.firstPrize && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">1st Place:</span>
+                        <span className="text-yellow-400 font-semibold">🥇 ₹{tournament.firstPrize}</span>
+                      </div>
+                    )}
+                    {tournament.secondPrize && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">2nd Place:</span>
+                        <span className="text-gray-300 font-semibold">🥈 ₹{tournament.secondPrize}</span>
+                      </div>
+                    )}
+                    {tournament.thirdPrize && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">3rd Place:</span>
+                        <span className="text-orange-400 font-semibold">🥉 ₹{tournament.thirdPrize}</span>
+                      </div>
+                    )}
+                    {!tournament.firstPrize && !tournament.secondPrize && !tournament.thirdPrize && (
+                         <div className="text-gray-500 text-center py-2 italic">
+                            Prize distribution details not available
+                         </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Recent Participants */}
-              <div className="bg-[#0f1923] border border-gray-700 rounded-lg p-4">
-                <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                  <span>👥</span> Recent Registrations
-                </h3>
-                <div className="space-y-2">
-                  {[
-                    { name: "ProGamer_X", team: "Team Alpha", time: "2 hours ago" },
-                    { name: "eSports_King", team: "Solo", time: "5 hours ago" },
-                    { name: "NightRider", team: "Team Phoenix", time: "1 day ago" },
-                    { name: "ShadowStrike", team: "Team Beta", time: "1 day ago" },
-                  ].map((participant, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="flex justify-between items-center p-2 hover:bg-[#1a2332] rounded transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-[#ff4655] to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                          {participant.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-white text-sm font-medium">{participant.name}</p>
-                          <p className="text-gray-500 text-xs">{participant.team}</p>
-                        </div>
-                      </div>
-                      <span className="text-gray-400 text-xs">{participant.time}</span>
-                    </motion.div>
-                  ))}
-                </div>
+              {/* Additional Details: Rules & Contact */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-[#0f1923] border border-gray-700 rounded-lg p-4">
+                    <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                      <span>📜</span> Rules
+                    </h3>
+                    <div className="text-gray-300 text-sm max-h-32 overflow-y-auto pr-2">
+                        {tournament.rules || "No specific rules provided."}
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0f1923] border border-gray-700 rounded-lg p-4">
+                    <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                      <span>🔗</span> Contact & Links
+                    </h3>
+                    <div className="space-y-3 text-sm">
+                        {tournament.contactInfo && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Contact:</span>
+                                <span className="text-white">{tournament.contactInfo}</span>
+                            </div>
+                        )}
+                         {tournament.discordLink && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Discord:</span>
+                                <a href={tournament.discordLink} target="_blank" rel="noopener noreferrer" className="text-[#5865F2] hover:underline truncate max-w-[200px]">
+                                    {tournament.discordLink}
+                                </a>
+                            </div>
+                        )}
+                        {tournament.streamLink && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Stream:</span>
+                                <a href={tournament.streamLink} target="_blank" rel="noopener noreferrer" className="text-[#9146FF] hover:underline truncate max-w-[200px]">
+                                    {tournament.streamLink}
+                                </a>
+                            </div>
+                        )}
+                        {!tournament.contactInfo && !tournament.discordLink && !tournament.streamLink && (
+                            <p className="text-gray-500 italic">No contact or links provided.</p>
+                        )}
+                    </div>
+                  </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-gray-700">
                 <button className="flex-1 bg-[#ff4655] hover:bg-red-600 text-white py-2.5 rounded-md font-semibold transition-all">
-                  View Full Participant List
+                  View Participants
                 </button>
                 {tournament.status === "Active" && (
                   <button className="px-6 bg-[#0f1923] hover:bg-[#1a2332] text-white py-2.5 rounded-md font-semibold transition-all border border-gray-700">

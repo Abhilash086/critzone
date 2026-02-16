@@ -10,6 +10,7 @@ import LoginPage from "./pages/Login";
 import HostAuth from "./pages/HostAuth";
 import PlayerDashboard from "./components/player/PlayerDashboard";
 import HostApp from "./components/host/HostApp";
+import SessionManager from "./components/SessionManager";
 
 // Layout component that handles scroll restoration
 function Layout() {
@@ -23,6 +24,7 @@ function Layout() {
     <>
       {/* Global toast container */}
       <Toaster position="top-center" reverseOrder={false} />
+      <SessionManager />
       <Outlet />
     </>
   );

@@ -108,7 +108,7 @@ const Navbar = ({ host = false }) => {
 
           {user && user.role === "host" && (
             <Link
-              to="/host/123/dashboard"
+              to={`/host/${user._id}/dashboard`}
               className="hover:text-red-400 transition-colors"
             >
               Dashboard
